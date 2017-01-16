@@ -171,8 +171,9 @@ func (rc *Raycaster) Render() {
 		rc.renderTarget.SetZ(x, perpWallDist)
 
 		for y := drawStart; y < drawEnd; y++ {
-			d := float64(y) - float64(rtSize.Y+lineHeight)
-			texY := int(d * float64(texSize.Y) / float64(lineHeight))
+			d := y - rtSize.Y/2 + lineHeight/2
+			texY := int(float64(d*texSize.Y) / float64(lineHeight))
+
 			c := texture.ColorIndexAt(texX, texY)
 			rc.renderTarget.SetColorIndex(x, y, c)
 		}
