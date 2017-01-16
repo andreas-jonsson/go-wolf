@@ -19,7 +19,8 @@ package play
 
 import (
 	"image"
-	"image/color/palette"
+	"image/color"
+	"image/draw"
 	"log"
 
 	"github.com/andreas-jonsson/go-wolf/engine"
@@ -30,7 +31,7 @@ import (
 
 type renderTarget struct {
 	bounds     image.Rectangle
-	backBuffer *image.Paletted
+	backBuffer draw.Image
 	depth      []float64
 }
 
@@ -38,9 +39,9 @@ func (rt *renderTarget) Bounds() image.Rectangle {
 	return rt.bounds
 }
 
-func (rt *renderTarget) SetColorIndex(x, y int, c uint8) {
+func (rt *renderTarget) Set(x, y int, c color.Color) {
 	if rt.backBuffer != nil {
-		rt.backBuffer.SetColorIndex(x, y, c)
+		rt.backBuffer.Set(x, y, c)
 	}
 }
 
@@ -50,7 +51,7 @@ func (rt *renderTarget) SetZ(x int, z float64) {
 	}
 }
 
-func (rt *renderTarget) setBackBuffer(img *image.Paletted) {
+func (rt *renderTarget) setBackBuffer(img draw.Image) {
 	rt.bounds = img.Bounds()
 	rt.backBuffer = img
 	rt.depth = make([]float64, rt.Bounds().Size().X)
@@ -63,7 +64,7 @@ type playState struct {
 
 func NewPlayState() *playState {
 	rt := new(renderTarget)
-	w, err := world.NewWorld("level1", palette.Plan9)
+	w, err := world.NewWorld("level1")
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -96,7 +97,7 @@ func (s *playState) Update(gctl game.GameControl) error {
 	return nil
 }
 
-func (s *playState) Render(backBuffer *image.Paletted) error {
+func (s *playState) Render(backBuffer draw.Image) error {
 	if s.rt.backBuffer == nil {
 		s.rt.setBackBuffer(backBuffer)
 	}

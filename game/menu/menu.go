@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package menu
 
 import (
-	"image"
+	"image/draw"
 
 	"github.com/andreas-jonsson/go-wolf/game"
 )
@@ -47,6 +47,6 @@ func (s *menuState) Update(gctl game.GameControl) error {
 	return nil
 }
 
-func (s *menuState) Render(backBuffer *image.Paletted) error {
+func (s *menuState) Render(backBuffer draw.Image) error {
 	return nil
 }

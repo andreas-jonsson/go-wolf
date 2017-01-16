@@ -22,8 +22,6 @@ package world
 import (
 	"encoding/json"
 	"image"
-	"image/color"
-	"image/draw"
 	"image/png"
 	"os"
 	"path"
@@ -33,12 +31,12 @@ import (
 
 type World struct {
 	mapData  [][]int
-	textures []*image.Paletted
+	textures []image.Image
 }
 
-func NewWorld(name string, pal color.Palette) (*World, error) {
+func NewWorld(name string) (*World, error) {
 	w := new(World)
-	if err := w.loadTextures(pal); err != nil {
+	if err := w.loadTextures(); err != nil {
 		return nil, err
 	}
 
@@ -49,7 +47,7 @@ func NewWorld(name string, pal color.Palette) (*World, error) {
 	return w, nil
 }
 
-func (w *World) loadTextures(pal color.Palette) error {
+func (w *World) loadTextures() error {
 	fp, err := os.Open(path.Join("data", "textures", "textures.json"))
 	if err != nil {
 		return err
@@ -76,11 +74,7 @@ func (w *World) loadTextures(pal color.Palette) error {
 			return err
 		}
 
-		bounds := img.Bounds()
-		convertedImage := image.NewPaletted(bounds, pal)
-		draw.Draw(convertedImage, bounds, img, image.ZP, draw.Src)
-
-		w.textures = append(w.textures, convertedImage)
+		w.textures = append(w.textures, img)
 	}
 
 	return nil

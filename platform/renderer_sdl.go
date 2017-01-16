@@ -21,9 +21,9 @@ package platform
 
 import (
 	"image"
-	"image/color"
-	"image/color/palette"
+	"image/draw"
 	"log"
+	"reflect"
 	"unsafe"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -71,10 +71,9 @@ func ConfigWithNoVSync(rnd *sdlRenderer) error {
 
 type sdlRenderer struct {
 	window           *sdl.Window
-	backBuffer       *image.Paletted
+	backBuffer       *image.RGBA
 	hwBuffer         *sdl.Texture
 	internalRenderer *sdl.Renderer
-	paletteLookup    [256]uint32
 
 	config struct {
 		windowTitle   string
@@ -127,8 +126,7 @@ func NewRenderer(configs ...Config) (*sdlRenderer, error) {
 	}
 
 	const width, height = 320, 200
-	r.backBuffer = image.NewPaletted(image.Rect(0, 0, width, height), palette.Plan9)
-	r.SetPalette(palette.Plan9)
+	r.backBuffer = image.NewRGBA(image.Rect(0, 0, width, height))
 
 	renderer, err := sdl.CreateRenderer(r.window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
@@ -156,23 +154,14 @@ func (r *sdlRenderer) ToggleFullscreen() {
 	}
 }
 
-func (r *sdlRenderer) BackBuffer() *image.Paletted {
+func (r *sdlRenderer) BackBuffer() draw.Image {
 	return r.backBuffer
 }
 
-func (r *sdlRenderer) SetPalette(pal color.Palette) {
-	r.backBuffer.Palette = pal
-	for i, c := range pal {
-		cr, cg, cb, _ := c.RGBA()
-		r.paletteLookup[i] = cr<<24 | cg<<16 | cb<<8
-	}
-}
 func (r *sdlRenderer) Clear() {
 	pix := r.backBuffer.Pix
-	black := r.backBuffer.Palette.Index(color.RGBA{0, 0, 0, 255})
-
 	for i := range pix {
-		pix[i] = uint8(black)
+		pix[i] = 0
 	}
 }
 
@@ -186,10 +175,10 @@ func (r *sdlRenderer) Present() {
 		log.Panicln(err)
 	}
 
-	for _, idx := range r.backBuffer.Pix {
-		*(*uint32)(p) = r.paletteLookup[idx]
-		p = unsafe.Pointer(uintptr(p) + 4)
-	}
+	sz := len(r.backBuffer.Pix)
+	h := &reflect.SliceHeader{Data: uintptr(p), Len: sz, Cap: sz}
+	dest := *(*[]byte)(unsafe.Pointer(h))
+	copy(dest, r.backBuffer.Pix)
 
 	r.hwBuffer.Unlock()
 	r.internalRenderer.Copy(r.hwBuffer, nil, nil)

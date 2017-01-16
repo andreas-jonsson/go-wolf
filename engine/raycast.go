@@ -19,6 +19,7 @@ package engine
 
 import (
 	"image"
+	"image/color"
 	"math"
 
 	"github.com/ungerik/go3d/float64/vec2"
@@ -32,13 +33,13 @@ type Raycaster struct {
 
 type RenderTarget interface {
 	Bounds() image.Rectangle
-	SetColorIndex(x, y int, c uint8)
+	Set(x, y int, c color.Color)
 	SetZ(x int, z float64)
 }
 
 type Texture interface {
 	Bounds() image.Rectangle
-	ColorIndexAt(x, y int) uint8
+	At(x, y int) color.Color
 }
 
 type World interface {
@@ -174,8 +175,9 @@ func (rc *Raycaster) Render() {
 			d := y - rtSize.Y/2 + lineHeight/2
 			texY := int(float64(d*texSize.Y) / float64(lineHeight))
 
-			c := texture.ColorIndexAt(texX, texY)
-			rc.renderTarget.SetColorIndex(x, y, c)
+			// Using the color interface is slow... but convenient. :)
+			c := texture.At(texX, texY)
+			rc.renderTarget.Set(x, y, c)
 		}
 	}
 }
