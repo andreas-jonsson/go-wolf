@@ -49,12 +49,33 @@ type World interface {
 
 func NewRaycaster(rt RenderTarget, w World) *Raycaster {
 	return &Raycaster{
-		pos:          vec2.T{22.0, 11.5},
 		dir:          vec2.T{-1.0, 0.0},
 		plane:        vec2.T{0.0, 0.66},
 		renderTarget: rt,
 		world:        w,
 	}
+}
+
+func (rc *Raycaster) Rotate(r float64) {
+	tmp := rc.dir[0]
+	rc.dir[0] = rc.dir[0]*math.Cos(r) - rc.dir[1]*math.Sin(r)
+	rc.dir[1] = tmp*math.Sin(r) + rc.dir[1]*math.Cos(r)
+
+	tmp = rc.plane[0]
+	rc.plane[0] = rc.plane[0]*math.Cos(r) - rc.plane[1]*math.Sin(r)
+	rc.plane[1] = tmp*math.Sin(r) + rc.plane[1]*math.Cos(r)
+}
+
+func (rc *Raycaster) Move(v vec2.T) {
+	rc.pos.Add(&v)
+}
+
+func (rc *Raycaster) Dir() vec2.T {
+	return rc.dir
+}
+
+func (rc *Raycaster) Pos() vec2.T {
+	return rc.pos
 }
 
 func (rc *Raycaster) Render() {
@@ -177,7 +198,12 @@ func (rc *Raycaster) Render() {
 
 			// Using the color interface is slow... but convenient. :)
 			c := texture.At(texX, texY)
+			//if side > 0 {
+			//	r, g, b, _ := c.RGBA()
+			//	rc.renderTarget.Set(x, y, color.RGBA{uint8(r / 2), uint8(g / 2), uint8(b / 2), 255})
+			//} else {
 			rc.renderTarget.Set(x, y, c)
+			//}
 		}
 	}
 }

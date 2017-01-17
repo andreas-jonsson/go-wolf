@@ -27,6 +27,7 @@ import (
 	"github.com/andreas-jonsson/go-wolf/game"
 	"github.com/andreas-jonsson/go-wolf/platform"
 	"github.com/andreas-jonsson/go-wolf/world"
+	"github.com/ungerik/go3d/float64/vec2"
 )
 
 type renderTarget struct {
@@ -80,6 +81,7 @@ func (s *playState) Name() string {
 }
 
 func (s *playState) Enter(from game.GameState, args ...interface{}) error {
+	s.rc.Move(vec2.T{22.0, 11.5})
 	return nil
 }
 
@@ -88,10 +90,34 @@ func (s *playState) Exit(to game.GameState) error {
 }
 
 func (s *playState) Update(gctl game.GameControl) error {
+	rc := s.rc
+	dt, _, _ := gctl.Timing()
+	dtf := dt.Seconds()
+
+	const (
+		moveSpeed = 10.0
+		rotSpeed  = 7.5
+	)
+
 	for event := gctl.PollEvent(); event != nil; event = gctl.PollEvent() {
-		switch event.(type) {
-		case *platform.KeyDownEvent, *platform.QuitEvent:
+		switch t := event.(type) {
+		case *platform.QuitEvent:
 			gctl.Terminate()
+		case *platform.KeyDownEvent:
+			switch t.Key {
+			case platform.KeyUp:
+				v := rc.Dir()
+				v.Scale(moveSpeed * dtf)
+				rc.Move(v)
+			case platform.KeyDown:
+				v := rc.Dir()
+				v.Scale(-moveSpeed * dtf)
+				rc.Move(v)
+			case platform.KeyLeft:
+				rc.Rotate(rotSpeed * dtf)
+			case platform.KeyRight:
+				rc.Rotate(-rotSpeed * dtf)
+			}
 		}
 	}
 	return nil
@@ -101,6 +127,21 @@ func (s *playState) Render(backBuffer draw.Image) error {
 	if s.rt.backBuffer == nil {
 		s.rt.setBackBuffer(backBuffer)
 	}
+
+	size := backBuffer.Bounds().Size()
+	roofColor := color.RGBA{75, 75, 75, 255}
+	floorColor := color.RGBA{100, 100, 100, 255}
+
+	for y := 0; y < size.Y; y++ {
+		c := roofColor
+		if y > size.Y/2 {
+			c = floorColor
+		}
+		for x := 0; x < size.X; x++ {
+			backBuffer.Set(x, y, c)
+		}
+	}
+
 	s.rc.Render()
 	return nil
 }
