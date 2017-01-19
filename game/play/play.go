@@ -52,6 +52,13 @@ func (rt *renderTarget) SetZ(x int, z float64) {
 	}
 }
 
+func (rt *renderTarget) GetZ(x int) float64 {
+	if rt.backBuffer != nil {
+		return rt.depth[x]
+	}
+	return -1
+}
+
 func (rt *renderTarget) setBackBuffer(img draw.Image) {
 	rt.bounds = img.Bounds()
 	rt.backBuffer = img
@@ -61,11 +68,19 @@ func (rt *renderTarget) setBackBuffer(img draw.Image) {
 type playState struct {
 	rt *renderTarget
 	rc *engine.Raycaster
+	sc *engine.Spritecaster
 }
 
 func NewPlayState() *playState {
+	const level = "level1"
+
 	rt := new(renderTarget)
-	w, err := world.NewWorld("level1")
+	w, err := world.NewWorld(level)
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	sprites, err := world.LoadSprites(level)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -73,6 +88,7 @@ func NewPlayState() *playState {
 	return &playState{
 		rt: rt,
 		rc: engine.NewRaycaster(rt, w),
+		sc: engine.NewSpritecaster(sprites),
 	}
 }
 
@@ -142,6 +158,9 @@ func (s *playState) Render(backBuffer draw.Image) error {
 		}
 	}
 
-	s.rc.Render()
+	rc := s.rc
+	rc.Render()
+	s.sc.Render(rc)
+
 	return nil
 }

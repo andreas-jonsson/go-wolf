@@ -1,0 +1,34 @@
+[
+    {
+        "Pos": [18.5, 10.5],
+        "Sprite": "pillar.png"
+    },
+    {
+        "Pos": [18.5, 11.5],
+        "Sprite": "pillar.png"
+    },
+    {
+        "Pos": [18.5, 12.5],
+        "Sprite": "pillar.png"
+    },
+    {
+        "Pos": [16.5, 16.5],
+        "Sprite": "pillar.png"
+    },
+    {
+        "Pos": [20.5, 16.5],
+        "Sprite": "pillar.png"
+    },
+    {
+        "Pos": [18.5, 4.5],
+        "Sprite": "greenlight.png"
+    },
+    {
+        "Pos": [18.5, 15.5],
+        "Sprite": "greenlight.png"
+    },
+    {
+        "Pos": [18.5, 17.5],
+        "Sprite": "greenlight.png"
+    }
+]

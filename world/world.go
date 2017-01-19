@@ -1,5 +1,3 @@
-// +build !mobile
-
 /*
 Copyright (C) 2017 Andreas T Jonsson
 
@@ -27,6 +25,7 @@ import (
 	"path"
 
 	"github.com/andreas-jonsson/go-wolf/engine"
+	"github.com/ungerik/go3d/float64/vec2"
 )
 
 type World struct {
@@ -61,8 +60,8 @@ func (w *World) loadTextures() error {
 		return err
 	}
 
-	for _, s := range textureList {
-		fp, err := os.Open(path.Join("data", "textures", s))
+	for _, t := range textureList {
+		fp, err := os.Open(path.Join("data", "textures", t))
 		if err != nil {
 			return err
 		}
@@ -102,4 +101,46 @@ func (w *World) GetTexture(index, shade int) engine.Texture {
 
 func (w *World) GetTile(x, y int) int {
 	return w.mapData[x][y]
+}
+
+func LoadSprites(name string) (engine.SpriteInstances, error) {
+	fp, err := os.Open(path.Join("data", "sprites", name+".json"))
+	if err != nil {
+		return nil, err
+	}
+	defer fp.Close()
+
+	var (
+		instances  engine.SpriteInstances
+		spriteList []struct {
+			Pos    [2]float64
+			Sprite string
+		}
+	)
+
+	dec := json.NewDecoder(fp)
+	if err := dec.Decode(&spriteList); err != nil {
+		return nil, err
+	}
+
+	for _, s := range spriteList {
+		fp, err := os.Open(path.Join("data", "sprites", s.Sprite))
+		if err != nil {
+			return nil, err
+		}
+
+		img, err := png.Decode(fp)
+		fp.Close()
+
+		if err != nil {
+			return nil, err
+		}
+
+		instances = append(instances, engine.SpriteInstance{
+			Pos: vec2.T{s.Pos[0], s.Pos[1]},
+			Tex: img,
+		})
+	}
+
+	return instances, nil
 }

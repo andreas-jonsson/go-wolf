@@ -1,5 +1,3 @@
-// +build !mobile
-
 /*
 Copyright (C) 2017 Andreas T Jonsson
 

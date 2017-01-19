@@ -35,6 +35,7 @@ type RenderTarget interface {
 	Bounds() image.Rectangle
 	Set(x, y int, c color.Color)
 	SetZ(x int, z float64)
+	GetZ(x int) float64
 }
 
 type Texture interface {
